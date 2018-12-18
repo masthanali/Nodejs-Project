@@ -1,6 +1,43 @@
-var http = require('http');
+var Connection = require('tedious').Connection;
+var Request = require('tedious').Request;
 
-http.createServer(function (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Hello Worlds make changes!');
-}).listen(8080);
+var config = {
+    userName: 'gbadmin', // update me
+    password: 'admin@2010', // update me
+    server: '192.168.0.47'
+  }
+
+  var connection = new Connection(config);
+
+  connection.on('connect', function(err) {
+    if (err) {
+      console.log(err);
+    } else {
+      executeStatement();
+    }
+  });
+
+
+  function executeStatement() {
+    request = new Request("select top 1 * from db_plumb_io_1464_New.dbo.Contact", function(err, rowCount) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(rowCount + ' rows');
+      }
+      connection.close();
+    });
+
+
+    request.on('row', function(columns) {
+        columns.forEach(function(column) {
+          if (column.value === null) {
+            console.log('NULL');
+          } else {
+            console.log(column.value);
+          }
+        });
+      });
+    
+      connection.execSql(request);
+    }
